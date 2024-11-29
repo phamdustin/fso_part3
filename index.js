@@ -55,15 +55,24 @@ app.delete('/api/persons/:id', (request,response) => {
 })
 
 app.post('/api/persons', (request,response) => {
-    const person = request.body
-    if (!person.name || !person.number) {
+    const newPerson = request.body
+    if (!newPerson.name || !newPerson.number) {
         return response.status(400).json({
-            error: 'Content missing'
+            error: 'Name or Number is missing'
         })
     }
-    person.id = String(Math.floor(Math.random() * 100000))
-    persons = persons.concat(person)
-    response.json(person)
+    var same = persons.find(function(person) {
+        return person.name.toString().toLowerCase() === newPerson.name.toString().toLowerCase()
+    })
+    if (same) {
+        console.log("Found!")
+        return response.status(400).json({
+            error: 'name must me unique'
+        })
+    }
+    newPerson.id = String(Math.floor(Math.random() * 100000))
+    persons = persons.concat(newPerson)
+    response.json(newPerson)
 })
 
 app.get('/info', (request, response) => {
