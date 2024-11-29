@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 
+app.use(express.json()) // without this, body property of POST request would be undefined
+
 let persons =[
     { 
       "id": "1",
@@ -43,6 +45,25 @@ app.get('/api/persons/:id', (request,response) => {
     } else {
         response.status(404).end()
     }
+})
+
+app.delete('/api/persons/:id', (request,response) => {
+    const id = request.params.id
+    person = persons.filter(person => person.id !== id)
+
+    response.status(204).end()
+})
+
+app.post('/api/persons', (request,response) => {
+    const person = request.body
+    if (!person.name || !person.number) {
+        return response.status(400).json({
+            error: 'Content missing'
+        })
+    }
+    person.id = String(Math.floor(Math.random() * 100000))
+    persons = persons.concat(person)
+    response.json(person)
 })
 
 app.get('/info', (request, response) => {
