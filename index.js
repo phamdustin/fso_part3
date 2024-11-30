@@ -1,12 +1,17 @@
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
+const cors = require('cors')
 
 morgan.token('data', function getData(req) {
     return JSON.stringify(req.body)
 })
+
+
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'))
 app.use(express.json()) // without this, body property of POST request would be undefined
+app.use(cors()) // allows for frontend to access data from a different PORT
+app.use(express.static('dist')) // whenever a GET request comes, it will check dist directory and return file
 
 let persons =[
     { 
@@ -85,7 +90,7 @@ app.get('/info', (request, response) => {
     response.send(info +"<br> <br/>" +timestamp)
 })
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
