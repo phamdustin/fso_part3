@@ -62,25 +62,25 @@ app.post('/api/persons', (request,response) => {
             error: 'Name or Number is missing'
         })
     }
-
-    const newPerson = new Person({
-        name: body.name,
-        number: body.number
-    })
-/*     var same = persons.find(function(person) {
-        return person.name.toString().toLowerCase() === newPerson.name.toString().toLowerCase()
-    })
-    if (same) {
-        console.log("Found!")
-        return response.status(400).json({
-            error: 'name must me unique'
+    Person.find({name: body.name})
+        .then(entry => {
+            if (entry) {
+                console.log(`Updating existing entry for ${body.name}`)
+                // update
+            } else {
+                // create new person
+                console.log(`Creating new entry for ${body.name}`)
+                const newPerson = new Person({
+                    name: body.name,
+                    number: body.number
+                })
+                newPerson.id = String(Math.floor(Math.random() * 100000))
+                newPerson.save().then(savedPerson => {
+                    response.json(savedPerson)
+                })
+            }
         })
-    } */
-    newPerson.id = String(Math.floor(Math.random() * 100000))
-    newPerson.save().then(savedPerson => {
-        response.json(savedPerson)
-    })
-    
+  
 })
 
 /* app.get('/info', (request, response) => {
