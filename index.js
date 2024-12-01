@@ -1,15 +1,24 @@
 require('dotenv').config()
 const express = require('express')
 const app = express()
+const Person = require('./models/person')
 const cors = require('cors')
 
-const Person = require('./models/person')
+
 
 app.use(express.static('dist')) // whenever a GET request comes, it will check dist directory and return
 app.use(express.json()) // without this, body property of POST request would be undefined
 app.use(cors()) // allows for frontend to access data from a different PORT
 
+const requestLogger = (request, response, next) => {
+    console.log('Method:', request.method)
+    console.log('Path:  ', request.path)
+    console.log('Body:  ', request.body)
+    console.log('---')
+    next()
+  }
 
+app.use(requestLogger)
 
 app.get('/', (request, response) => {
     response.send('<h1>Hello World!</h1>')
