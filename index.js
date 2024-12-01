@@ -2,6 +2,22 @@ const express = require('express')
 const app = express()
 const morgan = require('morgan')
 const cors = require('cors')
+const mongoose = require('mongoose')
+require('dotenv').config()
+const Person = require('./models/person')
+
+
+// Grabbing URL from .env file and connecting to the database
+const url = process.env.MONGODB_URI
+console.log('connecting to', url)
+mongoose.connect(url)
+  .then(result => {
+    console.log('connected to MongoDB')
+  })
+  .catch(error => {
+    console.log('error connecting to MongoDB:', error.message)
+  })
+
 
 morgan.token('data', function getData(req) {
     return JSON.stringify(req.body)
@@ -11,9 +27,9 @@ morgan.token('data', function getData(req) {
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :data'))
 app.use(express.json()) // without this, body property of POST request would be undefined
 app.use(cors()) // allows for frontend to access data from a different PORT
-app.use(express.static('dist')) // whenever a GET request comes, it will check dist directory and return file
+app.use(express.static('dist')) // whenever a GET request comes, it will check dist directory and return
 
-let persons =[
+/* let persons =[
     { 
       "id": "1",
       "name": "Arto Hellas", 
@@ -34,27 +50,24 @@ let persons =[
       "name": "Mary Poppendieck", 
       "number": "39-23-6423122"
     }
-]
+] */
 
-let info = `Phonebook has info for ${persons.length} people`
+//let info = `Phonebook has info for ${persons.length} people`
 
 app.get('/', (request, response) => {
-    response.send('<h1>Hellow World!</h1>')
+    response.send('<h1>Hello World!</h1>')
 })
 
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({}).then(persons => {
+        response.json(persons)
+    })
 })
 
 app.get('/api/persons/:id', (request,response) => {
-    const id = request.params.id
-    const person = persons.find(person => person.id === id)
-    
-    if (person) {
+    Person.findById(request.params.id).then(person=> {
         response.json(person)
-    } else {
-        response.status(404).end()
-    }
+    })
 })
 
 app.delete('/api/persons/:id', (request,response) => {
@@ -65,12 +78,17 @@ app.delete('/api/persons/:id', (request,response) => {
 })
 
 app.post('/api/persons', (request,response) => {
-    const newPerson = request.body
-    if (!newPerson.name || !newPerson.number) {
+    const body = request.body
+    if (!body.name || !body.number) {
         return response.status(400).json({
             error: 'Name or Number is missing'
         })
     }
+
+    const newPerson = new Person({
+        name: body.name,
+        number: body.number
+    })
     var same = persons.find(function(person) {
         return person.name.toString().toLowerCase() === newPerson.name.toString().toLowerCase()
     })
@@ -81,16 +99,18 @@ app.post('/api/persons', (request,response) => {
         })
     }
     newPerson.id = String(Math.floor(Math.random() * 100000))
-    persons = persons.concat(newPerson)
-    response.json(newPerson)
+    newPerson.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
+    
 })
 
-app.get('/info', (request, response) => {
+/* app.get('/info', (request, response) => {
     let timestamp = new Date()
     response.send(info +"<br> <br/>" +timestamp)
-})
+}) */
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
