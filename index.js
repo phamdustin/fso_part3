@@ -55,32 +55,34 @@ app.delete('/api/persons/:id', (request,response, next) => {
         .catch(error=> next(error))
 })
 
-app.post('/api/persons', (request,response) => {
+app.post('/api/persons', (request,response,next) => {
     const body = request.body
     if (!body.name || !body.number) {
         return response.status(400).json({
             error: 'Name or Number is missing'
         })
     }
-    Person.find({name: body.name})
-        .then(entry => {
-            if (entry) {
-                console.log(`Updating existing entry for ${body.name}`)
-                // update
-            } else {
-                // create new person
-                console.log(`Creating new entry for ${body.name}`)
-                const newPerson = new Person({
-                    name: body.name,
-                    number: body.number
-                })
-                newPerson.id = String(Math.floor(Math.random() * 100000))
-                newPerson.save().then(savedPerson => {
-                    response.json(savedPerson)
-                })
-            }
+    const newPerson = new Person({
+        name: body.name,
+        number: body.number
+    })
+    newPerson.id = String(Math.floor(Math.random() * 100000))
+    newPerson.save()
+        .then(savedPerson => {
+            console.log('person saved!')
+            response.json(savedPerson)
         })
+        .catch(error =>next(error))            
   
+})
+
+app.put('/api/persons/:id', (request,response,next) => {
+    const {name,number} = request.body
+    Person.findByIdAndUpdate(request.params.id, {name,number}, {new: true})
+        .then(updatedPerson => {
+            response.json(updatedPerson)
+        })
+        .catch(error =>next(error))
 })
 
 /* app.get('/info', (request, response) => {
