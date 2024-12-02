@@ -85,8 +85,10 @@ app.put('/api/persons/:id', (request,response,next) => {
         .catch(error =>next(error))
 })
 
-app.get('/info', (request, response) => {
-    const info = `Phonebook has info for ${persons.length} people`
+app.get('/info', async (request, response) => {
+
+    const count = await Person.countDocuments({})     
+    const info = `Phonebook has info for ${count} people`
     let timestamp = new Date()
     response.send(info +"<br> <br/>" +timestamp)
 }) 
