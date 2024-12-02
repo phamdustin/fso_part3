@@ -85,10 +85,11 @@ app.put('/api/persons/:id', (request,response,next) => {
         .catch(error =>next(error))
 })
 
-/* app.get('/info', (request, response) => {
+app.get('/info', (request, response) => {
+    const info = `Phonebook has info for ${persons.length} people`
     let timestamp = new Date()
     response.send(info +"<br> <br/>" +timestamp)
-}) */
+}) 
 
 
 // Error handling middleware has to be placed last!!!
